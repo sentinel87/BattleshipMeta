@@ -121,6 +121,11 @@ uint8_t track=-1;
 
 enemyInfo EnemyHitsCache[]={{false,0,0,0,1,0,0},{false,0,0,0,1,0,0},{false,0,0,0,1,0,0},{false,0,0,0,1,0,0},{false,0,0,0,1,0,0},{false,0,0,0,1,0,0},{false,0,0,0,1,0,0},{false,0,0,0,1,0,0},{false,0,0,0,1,0,0},{false,0,0,0,1,0,0}};
 
+//AI Automation
+
+int frames=0;
+bool aiAction=false;
+
 //-----------------
 void setup() {
   gb.begin();
@@ -210,6 +215,10 @@ void loop() {
       }
       else if(gameScreen==true)
       {
+        if(gameMode==1)//countdown for AI next action
+        {
+          timeCalculations();
+        }
         game();
       }
       else if(winningScreen==true)
@@ -233,6 +242,104 @@ void loop() {
   //gb.display.setFontSize(1);
   //gb.display.setColor(WHITE);
   //gb.display.println(gb.getCpuLoad());
+}
+
+void menuFunction() {
+  displayMenu();
+  if(gb.buttons.pressed(BUTTON_UP)||gb.buttons.pressed(BUTTON_DOWN)){
+      if(gameMode==1)
+      {
+        gameMode=2;
+        selectorPosY=46;
+      }
+      else
+      {
+        gameMode=1;
+        selectorPosY=38;
+      }
+      gb.sound.playTick();
+  }
+  else if(gb.buttons.pressed(BUTTON_A))
+  {
+    menuScreen=false;
+    placementInfoScreen=true;
+    clearGameData();
+  }
+}
+
+void pauseMenuFunction(){
+  displayPauseMenu();
+  if(gb.buttons.pressed(BUTTON_UP)||gb.buttons.pressed(BUTTON_DOWN)) {
+      if(pauseMode==1)
+      {
+        pauseMode=2;
+        selectorPosY=46;
+      }
+      else
+      {
+        pauseMode=1;
+        selectorPosY=38;
+      }
+      gb.sound.playTick();
+  }
+  else if(gb.buttons.pressed(BUTTON_A)) {
+    if(pauseMode==1)
+    {
+      gameScreen=true;
+      pause=false;
+    }
+    else
+    {
+      pause=false;
+      menuScreen=true;
+      selectorPosY=38;
+      gameMode=1;
+    }
+  }
+  else if(gb.buttons.pressed(BUTTON_MENU)) {
+    gameScreen=true;
+    pause=false;
+  }
+}
+
+void placeShipsInfo(char player[]) {
+  displayPlaceShipsInfo(player);
+  if(gb.buttons.pressed(BUTTON_A)) {
+    placementInfoScreen=false;
+    placementScreen=true;
+  }
+}
+
+void gameInfo() {
+  displayGameInfo();
+  if(gb.buttons.pressed(BUTTON_A)) {
+    gameInfoScreen=false;
+    gameScreen=true;
+  }
+}
+
+void gameWinningScreen() {
+  displayGameWinningScreen();
+  if(gb.buttons.pressed(BUTTON_A))
+  {
+    winningScreen=false;
+    menuScreen=true;
+  }
+}
+
+void timeCalculations() {
+  if(aiAction==false)
+  {
+    if(frames==25)// every second tick update game mechanics
+    {
+      frames=0;
+      aiAction=true;
+    }
+    else
+    {
+      frames++;
+    } 
+  }
 }
 
 void clearGameData()
@@ -306,6 +413,8 @@ void clearGameData()
   column=0;
   pauseMode=1;
   selectorPosY=38;
+  aiAction=false;
+  frames=0;
 }
 
 bool shipPlacement(int8_t arr[][10])
@@ -519,55 +628,80 @@ bool shipPlacement(int8_t arr[][10])
   return false;
 }
 
+void infoScreen(int player)
+{
+  displayTurnInfo(player);
+  if((gameMode==1&&playerTurn!=2)||(gameMode==2))
+  {
+    if(gb.buttons.pressed(BUTTON_A))
+    {
+      turnInfoScreen=false;
+    } 
+  }
+  else
+  {
+    if(aiAction==true)
+    {
+      turnInfoScreen=false;
+      aiAction=false;
+    }
+  }
+}
+
 void game()
 {
   bool onePress=false; //Only one key A pressed at frame
   if(turnInfoScreen==true)
   {
-    displayTurnInfo(playerTurn);
+    infoScreen(playerTurn);
     return;
   }
     if(playerBoard==1)//draw aiming screen
     {
-      if(gb.buttons.pressed(BUTTON_DOWN)&&infoLock==false){
-        if(row!=9)
-        {
-          targetPosY+=1;
-          row++;
-        }
+      //---------------------------------------------------
+      if((gameMode==1&&playerTurn!=2)||(gameMode==2))
+      {
+          if(gb.buttons.pressed(BUTTON_DOWN)&&infoLock==false){
+            if(row!=9)
+            {
+              targetPosY+=1;
+              row++;
+            }
+          }
+          else if(gb.buttons.pressed(BUTTON_UP)&&infoLock==false){
+            if(row!=0)
+            {
+              targetPosY-=1;
+              row--;
+            }
+          }
+          else if(gb.buttons.pressed(BUTTON_LEFT)&&infoLock==false){
+            if(column!=0)
+            {
+              targetPosX-=1;
+              column--;
+            }
+          }
+          else if(gb.buttons.pressed(BUTTON_RIGHT)&&infoLock==false){
+            if(column!=9)
+            {
+              targetPosX+=1;
+              column++;
+            }
+          }
+          else if(gb.buttons.pressed(BUTTON_A)&&infoLock==false){
+            if(playerTurn==1)
+            {
+              missed=attackShip(PlayerMatrix2); 
+            }
+            else
+            {
+              missed=attackShip(PlayerMatrix1);
+            }
+            onePress=true;
+          }
       }
-      else if(gb.buttons.pressed(BUTTON_UP)&&infoLock==false){
-        if(row!=0)
-        {
-          targetPosY-=1;
-          row--;
-        }
-      }
-      else if(gb.buttons.pressed(BUTTON_LEFT)&&infoLock==false){
-        if(column!=0)
-        {
-          targetPosX-=1;
-          column--;
-        }
-      }
-      else if(gb.buttons.pressed(BUTTON_RIGHT)&&infoLock==false){
-        if(column!=9)
-        {
-          targetPosX+=1;
-          column++;
-        }
-      }
-      else if(gb.buttons.pressed(BUTTON_A)&&infoLock==false){
-        if(playerTurn==1)
-        {
-          missed=attackShip(PlayerMatrix2); 
-        }
-        else
-        {
-          missed=attackShip(PlayerMatrix1);
-        }
-        onePress=true;
-      }
+      //---------------------------------------------------
 
      if(playerTurn==1)
      {
@@ -611,20 +745,23 @@ void game()
    }
    else if(gb.buttons.pressed(BUTTON_MENU)&&infoLock==false)
    {
-    selectorPosX=17;
-    selectorPosY=38;
-    pauseMode=1;
-    gameScreen=false;
-    pause=true;
+      selectorPosX=17;
+      selectorPosY=38;
+      pauseMode=1;
+      gameScreen=false;
+      pause=true;
    } 
   
   if(infoLock==true)
   {
     displayInfoLockScreen();
-    if(gb.buttons.pressed(BUTTON_A)&&onePress==false){
+    if((gameMode==1&&playerTurn!=2)||(gameMode==2)) //players control
+    {
+      if(gb.buttons.pressed(BUTTON_A)&&onePress==false){
         infoLock=false; //unblock
         hitSound=false;
-        if(missed==true)
+
+        if(missed) 
         {
           if(playerTurn==1)
           {
@@ -632,11 +769,34 @@ void game()
           }
           else
           {
-            if(consoleThinking==true)
-            {
-              consoleThinking=false;
-            }
             playerTurn=1;
+          }
+          targetPosX=0;
+          targetPosY=0;
+          row=0;
+          column=0;
+          aiAction=false;
+          missed=false;
+          turnInfoScreen=true;
+        }
+        if(checkWinningConditions()==true)
+        {
+          gameScreen=false;
+          winningScreen=true;
+        }
+      }
+    }
+    else //AI control
+    {
+      if(aiAction==true)  
+      {
+        infoLock=false; //unblock
+        hitSound=false;
+        if(missed==true)
+        {
+          playerTurn=1;
+          if(consoleThinking==true) {
+            consoleThinking=false;
           }
           targetPosX=0;
           targetPosY=0;
@@ -647,16 +807,17 @@ void game()
         }
         else
         {
-          if(consoleThinking==true)
-          {
+          if(consoleThinking==true) {
             consoleThinking=false;
           }
+          aiAction=false;        
         }
         if(checkWinningConditions()==true)
         {
           gameScreen=false;
           winningScreen=true;
         }
+      }
     }
   }
 }

@@ -1,5 +1,51 @@
+const uint16_t CONTROLLER_IMG[] = {
+  7,     // frame width
+  7,     // frame height
+  1,      // number of frames
+  1,      // animation speed
+  0xf818, // transparent color
+  0,      // RGB565 color mode
+  // frame 1/1
+  0xf818, 0xf818, 0xFFD690, 0xFFD690, 0xFFD690, 0xf818, 0xf818, 
+  0xf818, 0xf818, 0xFFD690, 0xFFD690, 0xFFD690, 0xf818, 0xf818, 
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690,
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 
+  0xf818, 0xf818, 0xFFD690, 0xFFD690, 0xFFD690, 0xf818, 0xf818, 
+  0xf818, 0xf818, 0xFFD690, 0xFFD690, 0xFFD690, 0xf818, 0xf818
+};
 
-void menuFunction() //Menu Screen
+const uint16_t BUTTON_IMG[] = {
+  7,     // frame width
+  7,     // frame height
+  1,      // number of frames
+  1,      // animation speed
+  0xf818, // transparent color
+  0,      // RGB565 color mode
+  // frame 1/1
+  0xf818, 0xf818, 0xFFD690, 0xFFD690, 0xFFD690, 0xf818, 0xf818, 
+  0xf818, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xf818, 
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690,
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 
+  0xf818, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xf818, 
+  0xf818, 0xf818, 0xFFD690, 0xFFD690, 0xFFD690, 0xf818, 0xf818
+};
+
+const uint16_t BUTTON_FLAT_IMG[] = {
+  7,     // frame width
+  3,     // frame height
+  1,      // number of frames
+  1,      // animation speed
+  0xf818, // transparent color
+  0,      // RGB565 color mode
+  // frame 1/1
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690,
+  0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690, 0xFFD690
+};
+
+void displayMenu() //Menu Screen
 {
   gb.display.setCursor(0, 5);
   gb.display.setFontSize(2);
@@ -15,33 +61,11 @@ void menuFunction() //Menu Screen
   gb.display.println("1 Player");
   gb.display.setCursor((gb.display.width()-36)/2, 44);
   gb.display.println("2 Players");
-
-  if(gb.buttons.pressed(BUTTON_UP)||gb.buttons.pressed(BUTTON_DOWN)){
-      if(gameMode==1)
-      {
-        gameMode=2;
-        selectorPosY=46;
-      }
-      else
-      {
-        gameMode=1;
-        selectorPosY=38;
-      }
-      gb.sound.playTick();
-    }
-
   gb.display.setColor(GREEN);
   gb.display.fillCircle(selectorPosX, selectorPosY, 1);
-
-  if(gb.buttons.pressed(BUTTON_A))
-  {
-    menuScreen=false;
-    placementInfoScreen=true;
-    clearGameData();
-  }
 }
 
-void pauseMenuFunction() //Menu Screen
+void displayPauseMenu() //Menu Screen
 {
   gb.display.setCursor((gb.display.width()-33)/2, 18);
   gb.display.setFontSize(2);
@@ -53,47 +77,11 @@ void pauseMenuFunction() //Menu Screen
   gb.display.println("Resume game");
   gb.display.setCursor((gb.display.width()-36)/2, 44);
   gb.display.println("Main menu");
-
-  if(gb.buttons.pressed(BUTTON_UP)||gb.buttons.pressed(BUTTON_DOWN)){
-      if(pauseMode==1)
-      {
-        pauseMode=2;
-        selectorPosY=46;
-      }
-      else
-      {
-        pauseMode=1;
-        selectorPosY=38;
-      }
-      gb.sound.playTick();
-    }
-
   gb.display.setColor(GREEN);
   gb.display.fillCircle(selectorPosX, selectorPosY, 1);
-
-  if(gb.buttons.pressed(BUTTON_A))
-  {
-    if(pauseMode==1)
-    {
-      gameScreen=true;
-      pause=false;
-    }
-    else
-    {
-      pause=false;
-      menuScreen=true;
-      selectorPosY=38;
-      gameMode=1;
-    }
-  }
-  else if(gb.buttons.pressed(BUTTON_MENU))
-  {
-    gameScreen=true;
-    pause=false;
-  }
 }
 
-void placeShipsInfo(char player[])
+void displayPlaceShipsInfo(char player[])
 {
   gb.display.setCursor(0, 5);
   gb.display.setFontSize(2);
@@ -103,21 +91,19 @@ void placeShipsInfo(char player[])
   gb.display.setFontSize(1);
   gb.display.setColor(BROWN);
   gb.display.println("Place ships:");
-  gb.display.setCursor(gb.display.width()/2-15, 8);
+  gb.display.drawImage(3,28,CONTROLLER_IMG);
   gb.display.setColor(WHITE);
-  gb.display.setCursor(gb.display.width()/2-38, 32);
-  gb.display.println("+ - move");
-  gb.display.setCursor(gb.display.width()/2-38, 40);
-  gb.display.println("B - rotate");
-  gb.display.setCursor(gb.display.width()/2-38, 48);
-  gb.display.println("A - place");
-  buttonHint();
-
-  if(gb.buttons.pressed(BUTTON_A))
-  {
-    placementInfoScreen=false;
-    placementScreen=true;
-  }
+  gb.display.setCursor(gb.display.width()/2-25, 29);
+  gb.display.println("move");
+  drawButton(false,6, 39,"B");
+  gb.display.setColor(WHITE);
+  gb.display.setCursor(gb.display.width()/2-25, 37);
+  gb.display.println("rotate");
+  drawButton(false,6, 47,"A");
+  gb.display.setColor(WHITE);
+  gb.display.setCursor(gb.display.width()/2-25, 45);
+  gb.display.println("place ship");
+  drawButton(true,gb.display.width()-6, gb.display.height()-6, "A");
 }
 
 void displayPlacementBoard(int8_t arr[][10])
@@ -159,7 +145,7 @@ void displayPlacementBoard(int8_t arr[][10])
   gb.display.printf("S:%d",submarines1);
 }
 
-void gameInfo()
+void displayGameInfo()
 {
   gb.display.setCursor(0, 5);
   gb.display.setFontSize(2);
@@ -169,22 +155,24 @@ void gameInfo()
   gb.display.setFontSize(1);
   gb.display.setColor(BROWN);
   gb.display.println("Game controls:");
+  gb.display.drawImage(3,28,CONTROLLER_IMG);
   gb.display.setColor(WHITE);
-  gb.display.setCursor(gb.display.width()/2-38, 26);
-  gb.display.println("+ - aim");
-  gb.display.setCursor(gb.display.width()/2-38, 34);
-  gb.display.println("A - fire");
-  gb.display.setCursor(gb.display.width()/2-38, 42);
-  gb.display.println("B - switch board");
-  gb.display.setCursor(gb.display.width()/2-38, 50);
-  gb.display.println("Sel - game menu");
-  buttonHint();
-
-  if(gb.buttons.pressed(BUTTON_A))
-  {
-    gameInfoScreen=false;
-    gameScreen=true;
-  }
+  gb.display.setCursor(gb.display.width()/2-25, 29);
+  gb.display.println("aim");
+  drawButton(false,6, 39,"A");
+  gb.display.setColor(WHITE);
+  gb.display.setCursor(gb.display.width()/2-25, 37);
+  gb.display.println("fire");
+  drawButton(false,6, 47,"B");
+  gb.display.setColor(WHITE);
+  gb.display.setCursor(gb.display.width()/2-25, 45);
+  gb.display.println("switch board");
+  drawButton(true,gb.display.width()-6, gb.display.height()-6, "A");
+  gb.display.drawImage(3,54,BUTTON_FLAT_IMG);
+  gb.display.setColor(WHITE);
+  gb.display.setCursor(gb.display.width()/2-25, 53);
+  gb.display.println("game menu");
+  drawButton(true,gb.display.width()-6, gb.display.height()-6, "A");
 }
 
 void displayPlayerFleet(int8_t arr[][10],int fireSeq)
@@ -362,10 +350,9 @@ void displayTurnInfo(int player)
   gb.display.setFontSize(1);
   gb.display.setColor(BROWN);
   gb.display.println("Your turn.");
-  buttonHint();
-  if(gb.buttons.pressed(BUTTON_A))
+  if((gameMode==1&&playerTurn!=2)||(gameMode==2))
   {
-    turnInfoScreen=false;
+    drawButton(true,gb.display.width()-6, gb.display.height()-6, "A");
   }
 }
 
@@ -403,7 +390,7 @@ void displayInfoLockScreen()
   }
 }
 
-void gameWinningScreen()  //End Game Result
+void displayGameWinningScreen()  //End Game Result
 {
   gb.display.setCursor(0, 5);
   gb.display.setFontSize(2);
@@ -412,29 +399,47 @@ void gameWinningScreen()  //End Game Result
   gb.display.setCursor(3, 22);
   gb.display.setColor(BROWN);
   gb.display.println("Wins!");
-  buttonHint();
-  if(gb.buttons.pressed(BUTTON_A))
-  {
-    winningScreen=false;
-    menuScreen=true;
-  }
+  drawButton(true,gb.display.width()-6, gb.display.height()-6, "A");
 }
 
 void buttonHint()
 {
-  if(fireSeq==1)
+  drawButton(true,gb.display.width()-6, gb.display.height()-6, "A");
+  //if(fireSeq==1)
+  //{
+  //  gb.display.setColor(RED);
+  //}
+  //else
+  //{
+  //  gb.display.setColor(ORANGE);
+  //}
+  //gb.display.fillCircle(gb.display.width()-6, gb.display.height()-6,4);
+  //gb.display.setColor(BEIGE);
+  //gb.display.fillCircle(gb.display.width()-6, gb.display.height()-6,3);
+  //gb.display.setCursor(gb.display.width()-7, gb.display.height()-8);
+  //gb.display.setColor(BLACK);
+  //gb.display.setFontSize(1);
+  //gb.display.printf("A");
+}
+
+void drawButton(bool hint,int posX, int posY, char tp[])
+{
+  if(hint==true)
   {
-    gb.display.setColor(RED);
+    if(fireSeq==1)
+    {
+      gb.display.setColor(RED);
+    }
+    else
+    {
+      gb.display.setColor(ORANGE);
+    }
+    gb.display.fillCircle(posX, posY,4); 
   }
-  else
-  {
-    gb.display.setColor(ORANGE);
-  }
-  gb.display.fillCircle(gb.display.width()-6, gb.display.height()-6,4);
-  gb.display.setColor(BEIGE);
-  gb.display.fillCircle(gb.display.width()-6, gb.display.height()-6,3);
-  gb.display.setCursor(gb.display.width()-7, gb.display.height()-8);
+  gb.display.drawImage(posX-3,posY-3,BUTTON_IMG);
+  gb.display.setCursor(posX-1, posY-2);
   gb.display.setColor(BLACK);
-  gb.display.printf("A");
+  gb.display.setFontSize(1);
+  gb.display.printf(tp);
 }
 
